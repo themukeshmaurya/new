@@ -247,3 +247,248 @@ void loop() {
   }
 }
 
+=============================================================================================================================================================
+=============================================================================================================================================================
+// A1Q8. To interface DHT11 Sensor with Arduino and write a program to print temperature and humidity reading.
+
+#include "DHT.h"
+#define DHTPIN 13
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(DHTPIN, INPUT);
+  dht.begin();
+}
+
+void loop() {
+
+  float h = dht.readHumidity();
+  float f = dht.readTemperature(true);
+  float c = dht.readTemperature();
+
+  if (isnan(h) || isnan(f) || isnan(c)) {
+    Serial.println("Not a value");
+  } else {
+    Serial.println("H : ");
+    Serial.println(h);
+    Serial.println("F : ");
+    Serial.println(f);
+    Serial.println("C : ");
+    Serial.println(c);
+  }
+
+  delay(2000);
+}
+
+==============================================================================================================================================================
+==============================================================================================================================================================
+
+// A1Q14. To interface Ultrasonic Sensor with Arduino. Use the ultrasonic sensor and extract the distance of object.
+
+#define ECHO 6
+#define TRIG 7
+
+long duration;
+int distance;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ECHO, INPUT);
+  pinMode(TRIG, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  duration = pulseIn(ECHO, HIGH);
+  distance = (duration * 0.034) / 2;
+  Serial.println(distance);
+}
+
+===================================================================================================================================================================
+===================================================================================================================================================================
+
+// A1Q13. To interface IR Sensor with Arduino and write a program to blink red or white LED. If the Transmitter transmit and Photodiode receives the rays then glow White LED else glow Red LED/play the buzzer.
+
+#define IRPIN 13
+#define LED1 12
+#define LED2 11
+#define BUZZ 10
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(IRPIN, INPUT);
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(BUZZ, OUTPUT);
+}
+
+void loop() {
+  Serial.println("IR Range : ");
+  Serial.println(digitalRead(IRPIN));
+  delay(10);
+
+  if (digitalRead(IRPIN) == 1) {
+    digitalWrite(LED2, HIGH);
+    digitalWrite(BUZZ, HIGH);
+    digitalWrite(LED1, LOW);
+  } else {
+    digitalWrite(LED1, HIGH);
+    digitalWrite(LED2, LOW);
+    digitalWrite(BUZZ, LOW);
+  }
+}
+
+
+// A1Q12. To interface IR Sensor with Arduino and write a program to print readings of IR sensor.
+
+#define IRPIN 13
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(IRPIN, INPUT);
+}
+
+void loop() {
+  Serial.println("IR Range : ");
+  Serial.println(digitalRead(IRPIN));
+  delay(1000);
+}
+
+=====================================================================================================================================================================
+=====================================================================================================================================================================
+
+// A1Q11. Write a Program to read five values of temperature and calculate the average of readings. Run the loop up to the average values of temperature and print the Fibonacci series up to the average temperature value.
+
+#include "DHT.h"
+#define DHTPIN 13
+#define DHTTYPE DHT11
+#define LED 12
+#define BUZZ 11
+
+int arr[5];
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(DHTPIN, INPUT);
+  dht.begin();
+  pinMode(LED, OUTPUT);
+  pinMode(BUZZ, OUTPUT);
+}
+
+void loop() {
+  float c = dht.readTemperature();
+
+  Serial.println("");
+  
+  for (int i = 0; i < 5; i++) {
+    Serial.print("C ");
+    Serial.print(i);
+    Serial.print(" : ");
+    Serial.println(c);
+    arr[i] = c;
+  }
+
+  int sum = 0;
+
+  for (int i = 0; i < 5; i++) {
+    sum = sum + arr[i];
+  }
+
+  Serial.print("Average : ");
+  Serial.print(sum / 5);
+  delay(2000);
+
+  int n = sum / 5, firstTerm = 0, secondTerm = 1;
+  Serial.print("Fibonacci Series till ");
+  Serial.print(n);
+  Serial.println(" terms:");
+
+  for (int i = 1; i <= n; ++i) {
+    
+    Serial.print(firstTerm);
+    Serial.println(", ");
+
+    int nextTerm = firstTerm + secondTerm;
+    firstTerm = secondTerm;
+    secondTerm = nextTerm;
+    
+  }
+}
+
+=================================================================================================================================================================
+=================================================================================================================================================================
+// A1Q10. Write a Program to read three values of temperature and 10 values of humidity. Perform Addition of three temperature readings and print the number is odd or even. Calculate the average of 10 humidity readings.
+
+#include "DHT.h"
+#define DHTPIN 13
+#define DHTTYPE DHT11
+
+int arr[10];
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(DHTPIN, INPUT);
+  dht.begin();
+}
+
+void loop() {
+
+  int sumOfH = 0;
+  int sumOfTempC = 0;
+  int sumOfTempF = 0;
+
+  for (int i = 0; i < 10; i++) {
+    float h = dht.readHumidity();
+    arr[i] = h;
+    sumOfH = sumOfH + h;
+    Serial.print("Humidity");
+    Serial.print(" : ");
+    Serial.println(h);
+    delay(1000);
+  }
+
+  delay(1000);
+  Serial.print("Average");
+  Serial.print(" : ");
+  Serial.println(sumOfH / 10);
+  delay(1000);
+
+  for (int i = 0; i < 3; i++) {
+    float c = dht.readTemperature();
+    float f = dht.readTemperature(true);
+    sumOfTempC = sumOfTempC + c;
+    sumOfTempF = sumOfTempF + f;
+  }
+  delay(1000);
+
+  Serial.print("Celcius : ");
+  Serial.print(sumOfTempC);
+  if (sumOfTempC % 2 == 0) {
+    Serial.println(" number is even...");
+  } else {
+    Serial.println(" number is odd...");
+  }
+
+  Serial.print("Feranhate : ");
+  Serial.print(sumOfTempF);
+  if (sumOfTempF % 2 == 0) {
+    Serial.println(" number is even...");
+  } else {
+    Serial.println(" number is odd...");
+  }
+
+  delay(1000);
+}
+
+
