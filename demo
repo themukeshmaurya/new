@@ -1,0 +1,49 @@
+// dh11 se censer agar 30 se uper jata h to buzz otherwise led
+
+#include "DHT.h"
+#define DHTPIN 8
+#define DHTTYPE DHT11
+#define LED_BUILTIN 11
+#define LED_BUILTIN1 5
+#define BUZZER 7
+
+DHT dht(DHTPIN,DHTTYPE);
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+  pinMode(BUZZER, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(LED_BUILTIN1, OUTPUT);
+}
+
+void loop() {
+   delay(2000);
+    
+      float humi=dht.readHumidity();
+    
+      float tempC=dht.readTemperature();
+    
+      float tempF=dht.readTemperature(true);
+      int temp=(int)tempC;
+      if(temp>30){
+          digitalWrite(LED_BUILTIN, HIGH);
+          delay(100); 
+            tone(BUZZER,500);
+            delay(100);
+         
+          Serial.println(temp);
+         
+      }
+      else{
+        
+          digitalWrite(LED_BUILTIN, LOW);
+         digitalWrite(LED_BUILTIN1, HIGH);
+           delay(100);
+           digitalWrite(LED_BUILTIN1, LOW);
+           delay(100);
+         
+          Serial.println(temp);
+          Serial.println(temp);
+      }
+ 
+}
