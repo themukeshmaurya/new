@@ -47,9 +47,12 @@ void loop() {
       }
  
 }
-
+===================================================================================================================================================================
+===================================================================================================================================================================
 
 // Write a program on pull up button press and event start the seven segment counter by 5,4,3,2,1 then start the taking 10 records on dht11 and perform the average temp of humidity and print that on serial.
+//internal exam solution
+
 
 #include "DHT.h"
 #define DHTPIN 12
@@ -131,6 +134,116 @@ void loop() {
     counter();
   } else {
     digitalWrite(led, HIGH);
+  }
+}
+
+================================================================================================================================================================
+=================================================================================================================================================================
+// A2Q4. Take only 3 readings of ultrasonic sensor (after trigger) at the intervals of 2 seconds then stop taking further readings. Average the readings and find out if that number is palindrome number or not. And display the output in LCD.
+
+#include <LiquidCrystal.h>
+
+#define ECHO 6
+#define TRIG 7
+
+long duration;
+int distance;
+
+int rs = 13, en = 12, d4 = 11, d5 = 10, d6 = 9, d7 = 8, sum, avg, n, r, s = 0, temp;
+
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+void setup() {
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+  pinMode(ECHO, INPUT);
+  pinMode(TRIG, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  duration = pulseIn(ECHO, HIGH);
+  distance = (duration * 0.034) / 2;
+  sum = 0;
+
+  for (int i = 0; i < 3; i++) {
+    sum += distance;
+  }
+
+  avg = sum / 3;
+
+  n = avg;
+
+  temp = n;
+
+  while (n > 0) {
+    r = n % 10;
+    s = (s * 10) + r;
+    n = n / 10;
+  }
+
+  Serial.println(distance);
+  lcd.clear();
+
+  if (temp == s)
+  {
+    lcd.print("palindrome");
+  }
+  else
+  {
+    lcd.print("not palindrome");
+  }
+}
+
+========================================================================================================================================================================
+======================================================================================================================================================================
+// A1Q9. Use DHT 11 and glow the red light if temperature goes above 30’c and play the buzzer and blink the green LED if temperature goes below 30’c and stop the buzzer.
+
+#include "DHT.h"
+#define DHTPIN 13
+#define DHTTYPE DHT11
+#define LED 12
+#define BUZZ 11
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(DHTPIN, INPUT);
+  dht.begin();
+  pinMode(LED, OUTPUT);
+  pinMode(BUZZ, OUTPUT);
+}
+
+void loop() {
+  
+  float h = dht.readHumidity();
+  float f = dht.readTemperature(true);
+  float c = dht.readTemperature();
+
+  if (isnan(h) || isnan(f) || isnan(c)) {
+    Serial.println("Not a value");
+  } else {
+    Serial.println("H : ");
+    Serial.println(h);
+    Serial.println("F : ");
+    Serial.println(f);
+    Serial.println("C : ");
+    Serial.println(c);
+  }
+
+  delay(2000);
+
+  if (c > 30) {
+    digitalWrite(BUZZ, HIGH);
+    digitalWrite(LED, LOW);
+  } else {
+    digitalWrite(BUZZ, LOW);
+    digitalWrite(LED, HIGH);
   }
 }
 
