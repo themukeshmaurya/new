@@ -1,636 +1,266 @@
+1. STAGE 111
+=========================================================================================================================================
+=========================================================================================================================================
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.ServiceModel.Web;
+using System.Text;
 
+namespace WcfServiceApp
+{
+    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the interface name "IService1" in both code and config file together.
+    [ServiceContract]
+    public interface IService1
+    {
+        [OperationContract]
+        string insertData(StudentClass stud);
 
+        [OperationContract]
+        string updateData(StudentClass stud);
 
-===========================================================================================================================================================
-==========================================================================================================================================================
+        [OperationContract]
+        string deleteData(StudentClass stud);
 
-// A1Q7. To interface PULLUP BUTTON with Arduino. write a program to turn ON/OFF LED as per the button pullup.
+        [OperationContract]
+        List<StudentClass> loadData();
 
-#define PULLUPBTN 13
-#define LED 12
-
-void setup() {
-  pinMode(PULLUPBTN, INPUT_PULLUP);
-  pinMode(LED, OUTPUT);
-}
-
-void loop() {
-  if (digitalRead(PULLUPBTN) == LOW) {
-    digitalWrite(LED, HIGH);
-  } else {
-    digitalWrite(LED, LOW);
-  }
-}
-
-===========================================================================================================================================================
-==========================================================================================================================================================
-
-// A2Q1. To interface Seven segment with Arduino and write a program to display numbers form 0 to 9 in seven segment.
-
-int a = 13, b = 12, c = 11, dp = 10, d = 9, e = 8, f = 7, g = 6;
-
-void setup() {
-  pinMode(a, OUTPUT);
-  pinMode(b, OUTPUT);
-  pinMode(c, OUTPUT);
-  pinMode(dp, OUTPUT);
-  pinMode(d, OUTPUT);
-  pinMode(e, OUTPUT);
-  pinMode(f, OUTPUT);
-  pinMode(g, OUTPUT);
-}
-
-void loop() {
-  // Print 0
-  digitalWrite(a, LOW);
-  digitalWrite(b, LOW);
-  digitalWrite(c, LOW);
-  digitalWrite(dp, LOW);
-  digitalWrite(d, LOW);
-  digitalWrite(e, LOW);
-  digitalWrite(f, LOW);
-  digitalWrite(g, HIGH);
-  delay(1000);
-
-=====================================================================================================================================================================
-=====================================================================================================================================================================
-
-
-// A2Q5. Connect ESP with Wifi and print the IP and MAC address of the device.
-
-#include <ESP8266WiFi.h>
-
-const String WIFI_NAME = "Praful";
-const String WIFI_PASSWORD = "12345678";
-
-void setup() {
-  Serial.begin(9600);
-  Serial.println("Connecting to... ");
-  Serial.println(WIFI_NAME);
-  WiFi.begin(WIFI_NAME, WIFI_PASSWORD);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Trying to connect to Wifi Network");
-  }
-  Serial.println("");
-  Serial.println("Successfully connected to WiFi network");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-  Serial.println("MAC address: ");
-  Serial.println(WiFi.macAddress());
-}
-
-void loop() {
-}
-
-=====================================================================================================================================================================
-=====================================================================================================================================================================
-
-
-// dh11 se censer agar 30 se uper jata h to buzz otherwise led
-
-#include "DHT.h"
-#define DHTPIN 8
-#define DHTTYPE DHT11
-#define LED_BUILTIN 11
-#define LED_BUILTIN1 5
-#define BUZZER 7
-
-DHT dht(DHTPIN,DHTTYPE);
-void setup() {
-  Serial.begin(9600);
-  dht.begin();
-  pinMode(BUZZER, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(LED_BUILTIN1, OUTPUT);
-}
-
-void loop() {
-   delay(2000);
-    
-      float humi=dht.readHumidity();
-    
-      float tempC=dht.readTemperature();
-    
-      float tempF=dht.readTemperature(true);
-      int temp=(int)tempC;
-      if(temp>30){
-          digitalWrite(LED_BUILTIN, HIGH);
-          delay(100); 
-            tone(BUZZER,500);
-            delay(100);
-         
-          Serial.println(temp);
-         
-      }
-      else{
-        
-          digitalWrite(LED_BUILTIN, LOW);
-         digitalWrite(LED_BUILTIN1, HIGH);
-           delay(100);
-           digitalWrite(LED_BUILTIN1, LOW);
-           delay(100);
-         
-          Serial.println(temp);
-          Serial.println(temp);
-      }
- 
-}
-===================================================================================================================================================================
-===================================================================================================================================================================
-
-// Write a program on pull up button press and event start the seven segment counter by 5,4,3,2,1 then start the taking 10 records on dht11 and perform the average temp of humidity and print that on serial.
-//internal exam solution
-
-
-#include "DHT.h"
-#define DHTPIN 12
-#define DHTTYPE DHT11
-
-float hsum = 0, havg = 0, tsum = 0, tavg = 0;
-int pullup = 10, led = 11;
-float h, t;
-
-int num_array[5][7] = {
-  { 1, 0, 0, 1, 1, 1, 1 },
-  { 0, 0, 1, 0, 0, 1, 0 },
-  { 0, 0, 0, 0, 1, 1, 0 },
-  { 1, 0, 0, 1, 1, 1, 0 },
-  { 0, 1, 0, 0, 1, 0, 0 }
-};
-
-DHT dht(DHTPIN, DHT11);
-
-void num_write(int);
-
-void setup() {
-  pinMode(pullup, INPUT_PULLUP);
-  pinMode(led, OUTPUT);
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(4, OUTPUT);
-  pinMode(6, OUTPUT);
-  pinMode(7, OUTPUT);
-  pinMode(8, OUTPUT);
-  pinMode(9, OUTPUT);
-  Serial.begin(9600);
-}
-
-void temp() {
-  for (int i = 0; i < 10; i++) {
-    h = dht.readHumidity();
-    Serial.print(h);
-    hsum += h;
-    t = dht.readTemperature();
-    Serial.print(t);
-    tsum += t;
-    delay(3000);
-  }
-
-  havg = hsum / 10;
-  tavg = tsum / 10;
-  Serial.println("Average of Temperature");
-  Serial.print(tavg);
-  Serial.println("Average of Humidity");
-  Serial.print(havg);
-}
-
-void num_write(int number) {
-  int pin = 2;
-  for (int k = 0; k < 7; k++) {
-    if (pin == 5) {
-      pin++;
     }
-    digitalWrite(pin, num_array[number][k]);
-    pin++;
-  }
-}
 
-void counter() {
-  digitalWrite(led, LOW);
-  delay(2000);
-  for (int j = 5; j > 0; j--) {
-    delay(1000);
-    num_write(j - 1);
-  }
-  delay(3000);
-  temp();
-  exit;
-}
 
-void loop() {
-  if (digitalRead(pullup) == LOW) {
-    counter();
-  } else {
-    digitalWrite(led, HIGH);
-  }
-}
-
-================================================================================================================================================================
-=================================================================================================================================================================
-// A2Q4. Take only 3 readings of ultrasonic sensor (after trigger) at the intervals of 2 seconds then stop taking further readings. Average the readings and find out if that number is palindrome number or not. And display the output in LCD.
-
-#include <LiquidCrystal.h>
-
-#define ECHO 6
-#define TRIG 7
-
-long duration;
-int distance;
-
-int rs = 13, en = 12, d4 = 11, d5 = 10, d6 = 9, d7 = 8, sum, avg, n, r, s = 0, temp;
-
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
-
-void setup() {
-  lcd.begin(16, 2);
-  Serial.begin(9600);
-  pinMode(ECHO, INPUT);
-  pinMode(TRIG, OUTPUT);
-}
-
-void loop() {
-  digitalWrite(TRIG, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
-  duration = pulseIn(ECHO, HIGH);
-  distance = (duration * 0.034) / 2;
-  sum = 0;
-
-  for (int i = 0; i < 3; i++) {
-    sum += distance;
-  }
-
-  avg = sum / 3;
-
-  n = avg;
-
-  temp = n;
-
-  while (n > 0) {
-    r = n % 10;
-    s = (s * 10) + r;
-    n = n / 10;
-  }
-
-  Serial.println(distance);
-  lcd.clear();
-
-  if (temp == s)
-  {
-    lcd.print("palindrome");
-  }
-  else
-  {
-    lcd.print("not palindrome");
-  }
-}
-
-========================================================================================================================================================================
-======================================================================================================================================================================
-// A1Q9. Use DHT 11 and glow the red light if temperature goes above 30’c and play the buzzer and blink the green LED if temperature goes below 30’c and stop the buzzer.
-
-#include "DHT.h"
-#define DHTPIN 13
-#define DHTTYPE DHT11
-#define LED 12
-#define BUZZ 11
-
-DHT dht(DHTPIN, DHTTYPE);
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(DHTPIN, INPUT);
-  dht.begin();
-  pinMode(LED, OUTPUT);
-  pinMode(BUZZ, OUTPUT);
-}
-
-void loop() {
-  
-  float h = dht.readHumidity();
-  float f = dht.readTemperature(true);
-  float c = dht.readTemperature();
-
-  if (isnan(h) || isnan(f) || isnan(c)) {
-    Serial.println("Not a value");
-  } else {
-    Serial.println("H : ");
-    Serial.println(h);
-    Serial.println("F : ");
-    Serial.println(f);
-    Serial.println("C : ");
-    Serial.println(c);
-  }
-
-  delay(2000);
-
-  if (c > 30) {
-    digitalWrite(BUZZ, HIGH);
-    digitalWrite(LED, LOW);
-  } else {
-    digitalWrite(BUZZ, LOW);
-    digitalWrite(LED, HIGH);
-  }
-}
-
-=============================================================================================================================================================
-=============================================================================================================================================================
-// A1Q8. To interface DHT11 Sensor with Arduino and write a program to print temperature and humidity reading.
-
-#include "DHT.h"
-#define DHTPIN 13
-#define DHTTYPE DHT11
-
-DHT dht(DHTPIN, DHTTYPE);
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(DHTPIN, INPUT);
-  dht.begin();
-}
-
-void loop() {
-
-  float h = dht.readHumidity();
-  float f = dht.readTemperature(true);
-  float c = dht.readTemperature();
-
-  if (isnan(h) || isnan(f) || isnan(c)) {
-    Serial.println("Not a value");
-  } else {
-    Serial.println("H : ");
-    Serial.println(h);
-    Serial.println("F : ");
-    Serial.println(f);
-    Serial.println("C : ");
-    Serial.println(c);
-  }
-
-  delay(2000);
-}
-
-==============================================================================================================================================================
-==============================================================================================================================================================
-
-// A1Q14. To interface Ultrasonic Sensor with Arduino. Use the ultrasonic sensor and extract the distance of object.
-
-#define ECHO 6
-#define TRIG 7
-
-long duration;
-int distance;
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(ECHO, INPUT);
-  pinMode(TRIG, OUTPUT);
-}
-
-void loop() {
-  digitalWrite(TRIG, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
-  duration = pulseIn(ECHO, HIGH);
-  distance = (duration * 0.034) / 2;
-  Serial.println(distance);
-}
-
-===================================================================================================================================================================
-===================================================================================================================================================================
-
-// A1Q13. To interface IR Sensor with Arduino and write a program to blink red or white LED. If the Transmitter transmit and Photodiode receives the rays then glow White LED else glow Red LED/play the buzzer.
-
-#define IRPIN 13
-#define LED1 12
-#define LED2 11
-#define BUZZ 10
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(IRPIN, INPUT);
-  pinMode(LED1, OUTPUT);
-  pinMode(LED2, OUTPUT);
-  pinMode(BUZZ, OUTPUT);
-}
-
-void loop() {
-  Serial.println("IR Range : ");
-  Serial.println(digitalRead(IRPIN));
-  delay(10);
-
-  if (digitalRead(IRPIN) == 1) {
-    digitalWrite(LED2, HIGH);
-    digitalWrite(BUZZ, HIGH);
-    digitalWrite(LED1, LOW);
-  } else {
-    digitalWrite(LED1, HIGH);
-    digitalWrite(LED2, LOW);
-    digitalWrite(BUZZ, LOW);
-  }
+    // Use a data contract as illustrated in the sample below to add composite types to service operations.
+    [DataContract]
+    public class StudentClass
+    {
+        [DataMember]
+        public int id { get; set; }
+        [DataMember]
+        public string name{ get; set; }
+        [DataMember]
+        public string email { get; set; }
+        [DataMember]
+        public DateTime dob { get; set; }
+        [DataMember]
+        public long mobno { get; set; }
+    }
 }
 
 
-// A1Q12. To interface IR Sensor with Arduino and write a program to print readings of IR sensor.
+==========================================================================================================================================
+==========================================================================================================================================
+2. STAGE 222
 
-#define IRPIN 13
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.ServiceModel.Web;
+using System.Text;
+using System.Data.SqlClient;
 
-void setup() {
-  Serial.begin(9600);
-  pinMode(IRPIN, INPUT);
+namespace WcfServiceApp
+{
+    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "Service1" in code, svc and config file together.
+    // NOTE: In order to launch WCF Test Client for testing this service, please select Service1.svc or Service1.svc.cs at the Solution Explorer and start debugging.
+    public class Service1 : IService1
+    {
+        string conStr = "";
+        string sqlQuery = "";
+        SqlConnection con;
+        SqlCommand cmd;
+        SqlDataReader dr;
+
+        public Service1()
+        {
+           conStr = "Data Source=.\\sqlexpress;Initial Catalog=extdb;Integrated Security=True";
+        }
+
+        public string insertData(StudentClass stud)
+        {
+            sqlQuery = "INSERT INTO Student_Mst(name, email, dob, mobno) VALUES('"+ stud.name + "','" + stud.email + "','" + stud.dob + "'," + stud.mobno + ")";
+            con = new SqlConnection(conStr);
+            cmd = new SqlCommand(sqlQuery,con);
+            con.Open();
+            cmd.ExecuteNonQuery();
+            con.Close();
+            return "Inserted.";
+        }
+
+        public string updateData(StudentClass stud)
+        {
+            sqlQuery = "UPDATE Student_Mst SET name = '" + stud.name + "', email = '" + stud.email + "', dob = '" + stud.dob + "', mobno = " + stud.mobno + " WHERE id = "+ stud.id +"";
+            con = new SqlConnection(conStr);
+            cmd = new SqlCommand(sqlQuery, con);
+            con.Open();
+            cmd.ExecuteNonQuery();
+            con.Close();
+            return "Updated.";
+        }
+
+        public string deleteData(StudentClass stud)
+        {
+            sqlQuery = "DELETE FROM Student_Mst WHERE id = " + stud.id + "";
+            con = new SqlConnection(conStr);
+            cmd = new SqlCommand(sqlQuery, con);
+            con.Open();
+            cmd.ExecuteNonQuery();
+            con.Close();
+            return "Deleted.";
+        }
+
+        public List<StudentClass> loadData()
+        {
+            List<StudentClass> studList = new List<StudentClass>();
+            StudentClass stud;
+
+            sqlQuery = "SELECT * FROM Student_Mst";
+            con = new SqlConnection(conStr);
+            cmd = new SqlCommand(sqlQuery, con);
+            con.Open();
+            dr = cmd.ExecuteReader();
+            if(dr.HasRows)
+            {
+                while(dr.Read())
+                {
+                    stud = new StudentClass();
+                    stud.id = Convert.ToInt32(dr[0].ToString());
+                    stud.name = dr[1].ToString();
+                    stud.email = dr[2].ToString();
+                    stud.dob = DateTime.Parse(dr[3].ToString());
+                    stud.mobno = Convert.ToInt64(dr[4].ToString());
+                    studList.Add(stud);
+                }
+            }
+            con.Close();
+            return studList;
+        }
+    }
 }
 
-void loop() {
-  Serial.println("IR Range : ");
-  Serial.println(digitalRead(IRPIN));
-  delay(1000);
+
+=========================================================================================================================================
+=========================================================================================================================================
+
+3. STAGE 333  (AXPS.CS)
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using ServiceReference1;
+
+public partial class _Default : System.Web.UI.Page
+{
+
+    Service1Client sc;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if(!IsPostBack)
+        {
+            loadData();
+        }
+    }
+
+    protected void btnInsert_Click(object sender, EventArgs e)
+    {
+        sc = new Service1Client();
+        StudentClass stud = new StudentClass();
+        stud.name = txtName.Text;
+        stud.email = txtEmail.Text;
+        stud.dob = DateTime.Parse(txtDob.Text);
+        stud.mobno = Convert.ToInt64(txtMobno.Text);
+        sc.insertData(stud);
+        loadData();
+    }
+
+    public void loadData()
+    {
+        sc = new Service1Client();
+        GridView1.DataSource = sc.loadData();
+        GridView1.DataBind();
+    }
+
+    protected void btnUpadte_Click(object sender, EventArgs e)
+    {
+        sc = new Service1Client();
+        StudentClass stud = new StudentClass();
+        stud.id = Convert.ToInt32(txtID.Text);
+        stud.name = txtName.Text;
+        stud.email = txtEmail.Text;
+        stud.dob = DateTime.Parse(txtDob.Text);
+        stud.mobno = Convert.ToInt64(txtMobno.Text);
+        sc.updateData(stud);
+        loadData();
+    }
+
+    protected void btnDelete_Click(object sender, EventArgs e)
+    {
+        sc = new Service1Client();
+        StudentClass stud = new StudentClass();
+        stud.id = Convert.ToInt32(txtID.Text);
+        sc.deleteData(stud);
+        loadData();
+    }
 }
 
-=====================================================================================================================================================================
-=====================================================================================================================================================================
 
-// A1Q11. Write a Program to read five values of temperature and calculate the average of readings. Run the loop up to the average values of temperature and print the Fibonacci series up to the average temperature value.
+========================================================================================================================================
+========================================================================================================================================
 
-#include "DHT.h"
-#define DHTPIN 13
-#define DHTTYPE DHT11
-#define LED 12
-#define BUZZ 11
+4. STAGE 444 (DESIGN PART)
 
-int arr[5];
 
-DHT dht(DHTPIN, DHTTYPE);
 
-void setup() {
-  Serial.begin(9600);
-  pinMode(DHTPIN, INPUT);
-  dht.begin();
-  pinMode(LED, OUTPUT);
-  pinMode(BUZZ, OUTPUT);
-}
+<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="_Default" %>
 
-void loop() {
-  float c = dht.readTemperature();
+<!DOCTYPE html>
 
-  Serial.println("");
-  
-  for (int i = 0; i < 5; i++) {
-    Serial.print("C ");
-    Serial.print(i);
-    Serial.print(" : ");
-    Serial.println(c);
-    arr[i] = c;
-  }
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title></title>
+</head>
+<body>
+    <form id="form1" runat="server">
 
-  int sum = 0;
-
-  for (int i = 0; i < 5; i++) {
-    sum = sum + arr[i];
-  }
-
-  Serial.print("Average : ");
-  Serial.print(sum / 5);
-  delay(2000);
-
-  int n = sum / 5, firstTerm = 0, secondTerm = 1;
-  Serial.print("Fibonacci Series till ");
-  Serial.print(n);
-  Serial.println(" terms:");
-
-  for (int i = 1; i <= n; ++i) {
-    
-    Serial.print(firstTerm);
-    Serial.println(", ");
-
-    int nextTerm = firstTerm + secondTerm;
-    firstTerm = secondTerm;
-    secondTerm = nextTerm;
-    
-  }
-}
-
-=================================================================================================================================================================
-=================================================================================================================================================================
-// A1Q10. Write a Program to read three values of temperature and 10 values of humidity. Perform Addition of three temperature readings and print the number is odd or even. Calculate the average of 10 humidity readings.
-
-#include "DHT.h"
-#define DHTPIN 13
-#define DHTTYPE DHT11
-
-int arr[10];
-
-DHT dht(DHTPIN, DHTTYPE);
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(DHTPIN, INPUT);
-  dht.begin();
-}
-
-void loop() {
-
-  int sumOfH = 0;
-  int sumOfTempC = 0;
-  int sumOfTempF = 0;
-
-  for (int i = 0; i < 10; i++) {
-    float h = dht.readHumidity();
-    arr[i] = h;
-    sumOfH = sumOfH + h;
-    Serial.print("Humidity");
-    Serial.print(" : ");
-    Serial.println(h);
-    delay(1000);
-  }
-
-  delay(1000);
-  Serial.print("Average");
-  Serial.print(" : ");
-  Serial.println(sumOfH / 10);
-  delay(1000);
-
-  for (int i = 0; i < 3; i++) {
-    float c = dht.readTemperature();
-    float f = dht.readTemperature(true);
-    sumOfTempC = sumOfTempC + c;
-    sumOfTempF = sumOfTempF + f;
-  }
-  delay(1000);
-
-  Serial.print("Celcius : ");
-  Serial.print(sumOfTempC);
-  if (sumOfTempC % 2 == 0) {
-    Serial.println(" number is even...");
-  } else {
-    Serial.println(" number is odd...");
-  }
-
-  Serial.print("Feranhate : ");
-  Serial.print(sumOfTempF);
-  if (sumOfTempF % 2 == 0) {
-    Serial.println(" number is even...");
-  } else {
-    Serial.println(" number is odd...");
-  }
-
-  delay(1000);
-}
-
-==================================================================================================================================================================
-==================================================================================================================================================================
-// A1Q15. Take only 3 readings of ultrasonic sensor (after trigger) at the intervals of 2 seconds then stop taking further readings. Average the readings and find out if that number is an Armstrong number or not. 
-
-#define ECHO 6
-#define TRIG 7
-
-long duration;
-int distance;
-
-int n, r, s = 0, temp, sum, avg;
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(ECHO, INPUT);
-  pinMode(TRIG, OUTPUT);
-}
-
-void loop() {
-  digitalWrite(TRIG, LOW);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, HIGH);
-  digitalWrite(TRIG, LOW);
-  duration = pulseIn(ECHO, HIGH);
-  distance = (duration * 0.034) / 2;
-  Serial.println(distance);
-  sum = 0;
-  for (int i = 0; i < 3; i++) {
-    sum += distance;
-  }
-  delay(2000);
-  digitalWrite(TRIG, LOW);
-
-  avg = sum / 3;
-
-  Serial.println(avg);
-
-  n = avg;
-
-  temp = n;
-
-  while (n > 0) {
-    r = n % 10;
-    s = s + (r * r * r);
-    n = n / 10;
-  }
-
-  if (temp == s) {
-    Serial.println("armstrong  number ");
-  } else {
-    Serial.println("not armstrong number");
-  }
-}
+    <div>
+        <br />
+        <asp:TextBox ID="txtID" runat="server" TextMode="Number"></asp:TextBox>
+        <br />
+        <br />
+        <asp:TextBox ID="txtName" runat="server"></asp:TextBox>
+        <br />
+        <br />
+        <asp:TextBox ID="txtEmail" runat="server" TextMode="Email"></asp:TextBox>
+        <br />
+        <br />
+        <asp:TextBox ID="txtDob" runat="server" TextMode="Date"></asp:TextBox>
+        <br />
+        <br />
+        <asp:TextBox ID="txtMobno" runat="server" TextMode="Number"></asp:TextBox>
+        <br />
+        <br />
+        <asp:Button ID="btnInsert" runat="server" Text="Insert" OnClick="btnInsert_Click" />
+        &nbsp;<asp:Button ID="btnUpadte" runat="server" Text="Update" OnClick="btnUpadte_Click" />
+        &nbsp;<asp:Button ID="btnDelete" runat="server" Text="Delete" OnClick="btnDelete_Click" />
+        &nbsp;<br />
+        <br />
+        <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="False">
+            <Columns>
+                <asp:BoundField DataField="id" HeaderText="ID" />
+                <asp:BoundField DataField="name" HeaderText="Name" />
+                <asp:BoundField DataField="email" HeaderText="Email" />
+                <asp:BoundField DataField="dob" DataFormatString="{0:dd/MM/yyyy}" HeaderText="Date Of Birth" />
+                <asp:BoundField DataField="mobno" HeaderText="Mobile No" />
+            </Columns>
+        </asp:GridView>    
+    </div>
+    </form>
+</body>
+</html>
