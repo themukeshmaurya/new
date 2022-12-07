@@ -1,321 +1,645 @@
-1. STAGE 111
-=========================================================================================================================================
-=========================================================================================================================================
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.ServiceModel;
-using System.ServiceModel.Web;
-using System.Text;
+=> Server.js
 
-namespace WcfServiceApp
+const express = require('express') 
+const mongoos = require('mongoose') 
+const cors = require('cors') 
+const { default: mongoose } = require('mongoose') 
+const app=express() 
+//Routes:
+const routesStud=require('./routes/student_route') 
+const routeLogin = require('./routes/login') 
+mongoose.connect('mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0/db1student') 
+//Middlewares:
+app.use(express.json()) 
+app.use(cors()) 
+app.use('/student',routesStud) 
+app.use('/login',routeLogin) 
+app.listen(5000,()=>{ 
+ console.log('Server is running') 
+}) 
+
+
+================================================================================================================================
+
+=>model.js
+
+
+const mongoose = require('mongoose') 
+const signup = new mongoose.Schema({ 
+ name:{ 
+ type:String, 
+ required:true
+ }, 
+ email:{ 
+ type:String, 
+ required:true
+ }, 
+ phone:{ 
+    type:String, 
+    required:true
+    }, 
+    username:{ 
+    type:String, 
+    required:true
+    }, 
+    password:{ 
+    type:String, 
+    required:true
+    }, 
+    sign_date:{ 
+    type:Date, 
+    default:Date.now
+    } 
+   }) 
+   module.exports=mongoose.model('student_master',signup) 
+
+
+==========================================================================================================================
+
+=>test.rest
+
+
+POST http://localhost:5000/student/signup
+content-type: application/json
+
+{ 
+ "name": "mukesh", 
+ "email": "mukeshgmail.com", 
+ "phone": "6352023139", 
+ "username": "mukesh", 
+ "password": "mukesh123"
+} 
+####
+GET http://localhost:5000/student/dispStudent
+
+###
+POST http://localhost:5000/login/login
+content-type: application/json
 {
-    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the interface name "IService1" in both code and config file together.
-    [ServiceContract]
-    public interface IService1
-    {
-        [OperationContract]
-        string insertData(StudentClass stud);
-
-        [OperationContract]
-        string updateData(StudentClass stud);
-
-        [OperationContract]
-        string deleteData(StudentClass stud);
-
-        [OperationContract]
-        List<StudentClass> loadData();
-
-    }
-
-
-    // Use a data contract as illustrated in the sample below to add composite types to service operations.
-    [DataContract]
-    public class StudentClass
-    {
-        [DataMember]
-        public int id { get; set; }
-        [DataMember]
-        public string name{ get; set; }
-        [DataMember]
-        public string email { get; set; }
-        [DataMember]
-        public DateTime dob { get; set; }
-        [DataMember]
-        public long mobno { get; set; }
-    }
-}
-
-
-==========================================================================================================================================
-==========================================================================================================================================
-2. STAGE 222
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.ServiceModel;
-using System.ServiceModel.Web;
-using System.Text;
-using System.Data.SqlClient;
-
-namespace WcfServiceApp
-{
-    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "Service1" in code, svc and config file together.
-    // NOTE: In order to launch WCF Test Client for testing this service, please select Service1.svc or Service1.svc.cs at the Solution Explorer and start debugging.
-    public class Service1 : IService1
-    {
-        string conStr = "";
-        string sqlQuery = "";
-        SqlConnection con;
-        SqlCommand cmd;
-        SqlDataReader dr;
-
-        public Service1()
-        {
-           conStr = "Data Source=.\\sqlexpress;Initial Catalog=extdb;Integrated Security=True";
-        }
-
-        public string insertData(StudentClass stud)
-        {
-            sqlQuery = "INSERT INTO Student_Mst(name, email, dob, mobno) VALUES('"+ stud.name + "','" + stud.email + "','" + stud.dob + "'," + stud.mobno + ")";
-            con = new SqlConnection(conStr);
-            cmd = new SqlCommand(sqlQuery,con);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-            return "Inserted.";
-        }
-
-        public string updateData(StudentClass stud)
-        {
-            sqlQuery = "UPDATE Student_Mst SET name = '" + stud.name + "', email = '" + stud.email + "', dob = '" + stud.dob + "', mobno = " + stud.mobno + " WHERE id = "+ stud.id +"";
-            con = new SqlConnection(conStr);
-            cmd = new SqlCommand(sqlQuery, con);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-            return "Updated.";
-        }
-
-        public string deleteData(StudentClass stud)
-        {
-            sqlQuery = "DELETE FROM Student_Mst WHERE id = " + stud.id + "";
-            con = new SqlConnection(conStr);
-            cmd = new SqlCommand(sqlQuery, con);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-            return "Deleted.";
-        }
-
-        public List<StudentClass> loadData()
-        {
-            List<StudentClass> studList = new List<StudentClass>();
-            StudentClass stud;
-
-            sqlQuery = "SELECT * FROM Student_Mst";
-            con = new SqlConnection(conStr);
-            cmd = new SqlCommand(sqlQuery, con);
-            con.Open();
-            dr = cmd.ExecuteReader();
-            if(dr.HasRows)
-            {
-                while(dr.Read())
-                {
-                    stud = new StudentClass();
-                    stud.id = Convert.ToInt32(dr[0].ToString());
-                    stud.name = dr[1].ToString();
-                    stud.email = dr[2].ToString();
-                    stud.dob = DateTime.Parse(dr[3].ToString());
-                    stud.mobno = Convert.ToInt64(dr[4].ToString());
-                    studList.Add(stud);
-                }
-            }
-            con.Close();
-            return studList;
-        }
-    }
-}
-
-
-=========================================================================================================================================
-=========================================================================================================================================
-
-3. STAGE 333  (AXPS.CS)
-
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using ServiceReference1;
-
-public partial class _Default : System.Web.UI.Page
-{
-
-    Service1Client sc;
-
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        if(!IsPostBack)
-        {
-            loadData();
-        }
-    }
-
-    protected void btnInsert_Click(object sender, EventArgs e)
-    {
-        sc = new Service1Client();
-        StudentClass stud = new StudentClass();
-        stud.name = txtName.Text;
-        stud.email = txtEmail.Text;
-        stud.dob = DateTime.Parse(txtDob.Text);
-        stud.mobno = Convert.ToInt64(txtMobno.Text);
-        sc.insertData(stud);
-        loadData();
-    }
-
-    public void loadData()
-    {
-        sc = new Service1Client();
-        GridView1.DataSource = sc.loadData();
-        GridView1.DataBind();
-    }
-
-    protected void btnUpadte_Click(object sender, EventArgs e)
-    {
-        sc = new Service1Client();
-        StudentClass stud = new StudentClass();
-        stud.id = Convert.ToInt32(txtID.Text);
-        stud.name = txtName.Text;
-        stud.email = txtEmail.Text;
-        stud.dob = DateTime.Parse(txtDob.Text);
-        stud.mobno = Convert.ToInt64(txtMobno.Text);
-        sc.updateData(stud);
-        loadData();
-    }
-
-    protected void btnDelete_Click(object sender, EventArgs e)
-    {
-        sc = new Service1Client();
-        StudentClass stud = new StudentClass();
-        stud.id = Convert.ToInt32(txtID.Text);
-        sc.deleteData(stud);
-        loadData();
-    }
-}
-
-
-========================================================================================================================================
-========================================================================================================================================
-
-4. STAGE 444 (DESIGN PART)
-
-
-
-<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="_Default" %>
+    "username": "mukesh", 
+    "password": "mukesh123"
+} 
+###
+DELETE http://localhost:5000/student/delete/6347297341d78c62de2d05cf
+
+###
+GET http://localhost:5000/student/getOneStudent/6346f4d5cb89428da59cab74
+
+###
+PATCH http://localhost:5000/student/update/6346f4d5cb89428da59cab74
+content-type: application/json
+{ 
+ "name": "manish", 
+ "email": "manish@gmail.com", 
+ "phone": "9016941931", 
+ "username": "manish", 
+ "password": "manish123"
+} 
+
+
+============================================================================================================================
+
+=>routes
+
+
+const express= require('express') 
+const router=express.Router() 
+const signupinfo=require('../models/student_models') 
+//INSERT
+router.post('/signup', async(req,res)=>{ 
+ const signupentry=new signupinfo({ 
+ name:req.body.name, 
+ email:req.body.email, 
+ phone:req.body.phone, 
+ username:req.body.username, 
+ password:req.body.password, 
+ }) 
+ signupentry.save() 
+}) 
+//DISPLAY
+router.get('/dispStudent',async(req,res)=>{ 
+ const data= await signupinfo.find() 
+ res.json(data) 
+}) 
+//Get data by ID
+router.get('/getOneStudent/:id',async(req,res)=>{ 
+    try{ 
+    const data = await signupinfo.findById(req.params.id) 
+    res.json(data) 
+    }catch(e){ 
+    res.json({message:e.message}) 
+    } 
+   }) 
+   //Update 
+   router.patch('/update/:id',async(req,res)=>{ 
+    try{ 
+    const id= req.params.id
+    const updateData = req.body
+    const options={new:true} 
+    const result= await signupinfo.findByIdAndUpdate(id,updateData,options) 
+    res.send(result) 
+    }catch(e){ 
+    res.json({message:e.message}) 
+    } 
+   }) 
+   //Delete
+   router.delete('/delete/:id',async(req,res)=>{ 
+    try{ 
+    const id=req.params.id
+    const data= await signupinfo.findByIdAndDelete(id) 
+    res.send('Student data has been deleted') 
+    }catch(e){ 
+    res.json({message:e.message}) 
+    } 
+   }) 
+   //Search Record
+   router.get('/search/:key',async(req,res)=>{ 
+    let result= await signupinfo.find({ 
+        "$or":[ 
+        {name: {$regex: req.params.key}}, 
+        {phone: {$regex: req.params.key}} 
+        ] 
+        }) 
+        res.send(result) 
+       }) 
+       module.exports=router
+       
+
+=================================================================================================================================
+
+=>login.js(server)
+
+
+const express = require('express') 
+const router = express.Router() 
+const logininfo = require('../models/student_models') 
+router.post('/login',async(req,res)=>{ 
+ console.log(req.body) 
+ if(req.body.username && req.body.password){ 
+ let loginchk = await logininfo.findOne(req.body).select('-password') 
+ if(loginchk){ 
+ res.send(loginchk) 
+ }
+ else
+ { 
+ res.send({result:"Invalid username or password"}) 
+ } 
+ }
+ else
+ { 
+ res.send({result:"Invalid username or password"}) 
+ } 
+}) 
+module.exports=router
+
+
+======================================================================================================================================
+
+											CLIENT-SIDE
+
+=======================================================================================================================================
+
+=>App.js
+
+
+import './App.css'; 
+import { Route,Routes } from 'react-router-dom'; 
+import CreateStudent from './comp/CreateStudent'; 
+import DisplayStudent from './comp/DisplayStudents';
+import Login from './comp/Login'; 
+import Header from './comp/Header'; 
+import Logout from './comp/Logout'; 
+import UpdateStudent from './comp/UpdateStudent'; 
+function App() { 
+ return ( 
+ <div className="App">
+ <Header />
+ <Routes>
+ <Route path="/" element={<DisplayStudent/>} exact />
+ <Route path="/AddStudents" element={<CreateStudent />} exact />
+ <Route path="/UpdateStudent/:id" element={<UpdateStudent/>} exact />
+ <Route path="/Login" element={ <Login />} exact />
+ <Route path="/Logout" element={ <Logout />} exact />
+ <Route path="*" element={ <DisplayStudent/>} exact/>
+ </Routes>
+ </div>
+ ); 
+} 
+export default App; 
+
+
+=====================================================================================================================================
+
+=>CreateStudent.js
+
+import React ,{useState}from 'react'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+const CreateStudent = () => { 
+ const navigate = useNavigate() 
+ const [name,setName]=useState('') 
+ const [email,setEmail]=useState('') 
+ const [phone,setPhone]=useState('') 
+ const [username,setUsername]=useState('') 
+ const [password,setPassword]=useState('') 
+ const handleName=(e)=>{ 
+ setName(e.target.value) 
+ } 
+ const handleEmail=(e)=>{ 
+ setEmail(e.target.value) 
+ } 
+ const handlePhone=(e)=>{ 
+ setPhone(e.target.value) 
+ } 
+ const handleUsername=(e)=>{ 
+ setUsername(e.target.value) 
+ } 
+ const handlePassword=(e)=>{ 
+ setPassword(e.target.value) 
+ } 
+ const collectData= async()=>{ 
+ try{ 
+ let insertData= axios.post('http://localhost:5000/student/signup',{ 
+ name, 
+ email, 
+ phone, 
+ username, 
+ password
+ }); 
+ if(insertData){ 
+ alert('Student Added Successfully.') 
+ navigate('/',{replace:true}) 
+ navigate(0) //To reload the page
+ } 
+ } 
+ catch(error) { 
+ console.log(error) 
+ } 
+ } 
+ return ( 
+ <div className='App'>
+ <header className='App--header'>
+ <h3>Student Registration</h3>
+ <label>
+ Name: 
+ </label><br/>
+ <input type="text" name="name" value={name} required
+onChange={(e)=>handleName(e)}/><br/>
+ <label>
+ Email: 
+ </label><br/>
+ <input type="email" name="email" value={email} required
+onChange={(e)=>handleEmail(e)}/><br/>
+ <label>
+ Phone: 
+ </label><br/>
+ <input type="text" name="phone" value={phone} required
+onChange={(e)=>handlePhone(e)}/><br/>
+ <label>
+ Username: 
+ </label><br/>
+ <input type="text" name="username" value={username} required
+onChange={(e)=>handleUsername(e)}/><br/>
+ <label>
+ Password: 
+ </label><br/>
+ <input type="password" name="password" value={password} required
+onChange={(e)=>handlePassword(e)}/><br/>
+ <button type="button" onClick={collectData}>Submit</button>
+ </header>
+ </div>
+ ) 
+} 
+export default CreateStudent
+
+
+===================================================================================================================================
+
+=>DisplayStudents.js
+
+
+import React,{useState,useEffect} from 'react'
+import axios from 'axios'
+import { NavLink } from 'react-router-dom'; 
+const DisplayStudent = () => { 
+ const [data,setData]=useState([]); 
+ useEffect(()=>{ 
+ getData() 
+ },[]) 
+ const getData= async()=>{ 
+    try{ 
+        const result = await axios.get('http://localhost:5000/student/dispStudent'); 
+        setData(result.data) 
+        }catch(e){ 
+        console.log(e) 
+        } 
+        
+        } 
+        const deleteStudent=async(id)=>{ 
+        alert(id) 
+        let result = await axios.delete(`http://localhost:5000/student/delete/${id}`) 
+        if(result){ 
+        alert("Student data deleted") 
+        getData() 
+        } 
+        } 
+        const studentrecord = data.map((d)=>{ 
+        return( 
+        <tr>
+        <td>{d.name}</td>
+        <td>{d.email}</td>
+        <td>{d.phone}</td>
+        <td><NavLink to={`/UpdateStudent/${d._id}`}>Edit </NavLink></td> 
+        <td><button type="button"
+       onClick={()=>deleteStudent(d._id)}>Delete</button></td>
+        </tr>
+        ) 
+        }) 
+        const searchData=async(e)=>{ 
+        let key = e.target.value
+        if(key){ 
+        let result = await axios.get(`http://localhost:5000/student/search/${key}`) 
+        console.log(result.data) 
+        if(result){ 
+        setData(result.data) 
+        } 
+        }else{ 
+        getData() 
+        } 
+        } 
+        return ( 
+        <div>
+        Serach : <input type="text" onChange={searchData} />
+        <table className='table table-stripped'>
+        <tr>
+ <th>Name</th>
+ <th>Email</th>
+ <th>Phone</th>
+ <th>Edit</th>
+ <th>Delete</th> 
+ </tr>
+ {studentrecord}
+ </table>
+ </div>
+ ) 
+} 
+export default DisplayStudent
+
+
+======================================================================================================================================
+
+=>Login.js(client-side)
+
+
+import React,{useState} from 'react'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+const Login = () => { 
+ let navigate = useNavigate() 
+ const [username,setUsername]=useState('') 
+ const [password,setPassword]=useState('') 
+ const handleUserChange=(e)=>{ 
+ setUsername(e.target.value) 
+ } 
+ const handlePassChange=(e)=>{ 
+ setPassword(e.target.value) 
+ } 
+ const collectData=async()=>{ 
+ try{ 
+ let logindata= await axios.post('http://localhost:5000/login/login',{ 
+ username, 
+ password
+ }) 
+ logindata=(await logindata).data
+ alert(logindata.name) 
+ if(logindata.name){ 
+ localStorage.setItem("login",JSON.stringify(logindata)) 
+ navigate('/',{replace:true}) 
+ navigate(0) //To reload the page
+ }else{
+    alert("Username or password incorrect") 
+ } 
+ }catch(e){ 
+ console.log(e) 
+ } 
+ } 
+ return ( 
+ <div className='App'>
+ <header className='App--header'>
+ <h1>Login Page</h1>
+ <label>
+ Username : 
+ </label><br/>
+ <input type="text" name="username" value={username} required
+onChange={(e)=>handleUserChange(e)}/><br/>
+ <label>
+ Password : 
+ </label><br/>
+ <input type="password" name="password" value={password} required
+onChange={(e)=>handlePassChange(e)}/><br/>
+ <button type="button" onClick={collectData} >Login</button>
+ </header>
+ 
+ </div>
+ ) 
+} 
+export default Login
+
+
+======================================================================================================================================
+
+=>Logout.js
+
+import React,{useEffect} from 'react'
+import { useNavigate } from 'react-router-dom'
+const Logout = () => { 
+ const navigate = useNavigate() 
+ useEffect(()=>{ 
+ localStorage.clear() 
+ navigate('/',{replace:true}) 
+ navigate(0) //To reload the page
+ },[]) 
+ return ( 
+ <div>Logout</div>
+ )
+} 
+export default Logout
+
+=======================================================================================================================================
+
+=>UpdateStudent.js
+
+
+import React ,{useState,useEffect}from 'react'
+import axios from 'axios'
+import { useNavigate,useParams } from 'react-router-dom'
+const UpdateStudent = () => { 
+ const navigate = useNavigate() 
+ const param = useParams() 
+ const [name,setName]=useState('') 
+ const [email,setEmail]=useState('') 
+ const [phone,setPhone]=useState('') 
+ const [username,setUsername]=useState('') 
+ const [password,setPassword]=useState('') 
+ 
+ const handleName=(e)=>{ 
+ setName(e.target.value) 
+ } 
+ const handleEmail=(e)=>{ 
+ setEmail(e.target.value) 
+ } 
+ const handlePhone=(e)=>{ 
+ setPhone(e.target.value) 
+ } 
+ const handleUsername=(e)=>{ 
+ setUsername(e.target.value) 
+ } 
+ const handlePassword=(e)=>{ 
+ setPassword(e.target.value) 
+ } 
+ const dispData = async()=>{ 
+ let result = await
+axios.get(`http://localhost:5000/student/getOneStudent/${param.id}`) 
+ setName(result.data.name) 
+ setEmail(result.data.email) 
+ setPhone(result.data.phone) 
+ setUsername(result.data.username) 
+ setPassword(result.data.password)
+} 
+useEffect(()=>{ //To be invoke on page load, invoked once use []
+dispData() 
+},[]) 
+const collectData= async()=>{ 
+let result = await axios.patch(`http://localhost:5000/student/update/${param.id}`,{ 
+name, 
+email, 
+phone, 
+username, 
+password
+}) 
+if(result){ 
+navigate('/') 
+navigate(0) 
+} 
+
+} 
+return ( 
+<div className='App'>
+<header className='App--header'>
+<h3>Update Student</h3>
+<label>
+Name: 
+</label><br/>
+<input type="text" name="name" value={name} required
+onChange={(e)=>handleName(e)}/><br/>
+<label>
+Email: 
+</label><br/>
+<input type="email" name="email" value={email} required
+onChange={(e)=>handleEmail(e)}/><br/>
+<label>
+Phone: 
+</label><br/>
+<input type="text" name="phone" value={phone} required
+onChange={(e)=>handlePhone(e)}/><br/>
+<label>
+Username: 
+</label><br/>
+<input type="text" name="username" value={username} required
+onChange={(e)=>handleUsername(e)}/><br/>
+<label>
+Password: 
+</label><br/>
+<input type="password" name="password" value={password} required
+onChange={(e)=>handlePassword(e)}/><br/>
+ <button type="button" onClick={collectData}>Update</button>
+ </header>
+ 
+ </div>
+ ) 
+} 
+export default UpdateStudent
+
+======================================================================================================================================
+
+=>Header.js:
+
+import React from 'react'
+import { NavLink } from 'react-router-dom'
+const Header = () => { 
+ let auth= localStorage.getItem('login') 
+ return ( 
+ <div>
+ <nav>
+ <NavLink to='/'>Home</NavLink>
+ {
+ auth?<>
+ <NavLink to='/Logout'>Logout</NavLink>
+ <NavLink to='/AddStudents'>Add Student</NavLink> 
+ </>: 
+ <NavLink to='/Login'>Login</NavLink>
+ }
+ </nav>
+ </div>
+ ) 
+} 
+export default Header
+
+=======================================================================================================================================
+
+=>App.css: (just Append) 
+
+nav{ 
+  background-color: #333; 
+  padding: 5px; 
+} 
+nav a{ 
+ margin: 20px; 
+} 
+nav a.active{ 
+ font-weight: bold; 
+ text-decoration: none; 
+ color:beige; 
+}    
+
+
+======================================================================================================================================
+
+=> index.js (just Append) 
+
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+import { BrowserRouter } from 'react-router-dom'; 
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  
+  <BrowserRouter>
+  <App />
+ </BrowserRouter>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+
+
+======================================================================================================================================
+
+=>Index.html (paste Bootstrap Links)
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+rel="stylesheet" integrity="sha384-
+Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+crossorigin="anonymous"></script
+
+======================================================================================================================================
 
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head runat="server">
-    <title></title>
-</head>
-<body>
-    <form id="form1" runat="server">
-
-    <div>
-        <br />
-        <asp:TextBox ID="txtID" runat="server" TextMode="Number"></asp:TextBox>
-        <br />
-        <br />
-        <asp:TextBox ID="txtName" runat="server"></asp:TextBox>
-        <br />
-        <br />
-        <asp:TextBox ID="txtEmail" runat="server" TextMode="Email"></asp:TextBox>
-        <br />
-        <br />
-        <asp:TextBox ID="txtDob" runat="server" TextMode="Date"></asp:TextBox>
-        <br />
-        <br />
-        <asp:TextBox ID="txtMobno" runat="server" TextMode="Number"></asp:TextBox>
-        <br />
-        <br />
-        <asp:Button ID="btnInsert" runat="server" Text="Insert" OnClick="btnInsert_Click" />
-        &nbsp;<asp:Button ID="btnUpadte" runat="server" Text="Update" OnClick="btnUpadte_Click" />
-        &nbsp;<asp:Button ID="btnDelete" runat="server" Text="Delete" OnClick="btnDelete_Click" />
-        &nbsp;<br />
-        <br />
-        <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="False">
-            <Columns>
-                <asp:BoundField DataField="id" HeaderText="ID" />
-                <asp:BoundField DataField="name" HeaderText="Name" />
-                <asp:BoundField DataField="email" HeaderText="Email" />
-                <asp:BoundField DataField="dob" DataFormatString="{0:dd/MM/yyyy}" HeaderText="Date Of Birth" />
-                <asp:BoundField DataField="mobno" HeaderText="Mobile No" />
-            </Columns>
-        </asp:GridView>    
-    </div>
-    </form>
-</body>
-</html>
-
-
-
-
-
-
-===========
-
-public List<studentdetails> searchData(studentdetails stud)
-
-        {
-
-            List<studentdetails> studentlist = new List<studentdetails>();
-
-            studentdetails sd;
-
-            SqlConnection con = new SqlConnection(str);
-
-            con.Open();
-
-            string query = "select * from mytab where id = "+ stud.id +"";
-
-            SqlCommand cmd = new SqlCommand(query,con);
-
-            SqlDataReader dr = cmd.ExecuteReader();
-
-            if (dr.HasRows)
-
-            {
-
-                while (dr.Read())
-
-                {
-
-                    sd = new studentdetails();
-
-                    sd.id = Convert.ToInt32(dr[0].ToString());
-
-                    sd.name = dr[1].ToString();
-
-                    sd.address = dr[2].ToString();
-
-                    sd.dob = DateTime.Parse(dr[3].ToString());
-
-                    sd.mobno = Convert.ToInt64(dr[4].ToString());
-
-                    studentlist.Add(sd);
-
-                }
-
-            }
-
-            return studentlist;
-
-        }
